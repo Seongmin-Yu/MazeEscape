@@ -15,10 +15,8 @@
 //------------------------------------------------------------
 int i = 0, j = 0;
 char map[HIGH][WIDE];
-char logo[6][79];
 //------------------------------------------------------------
-void scan_logo();
-void print_UI(int menu);
+void print_UI(int menu,int *select_menu);
 void scan_map();
 void print_map(int cx, int cy);
 void move_character(int cx,int cy);
@@ -36,44 +34,44 @@ int main()
 
 	RemoveCursor();
 	scan_map();
+	print_UI(select_menu,&select_menu);
 	while (clear != 1)
 	{
-		print_UI(select_menu);
+		print_UI(select_menu, &select_menu);
 		search_character(&character_x, &character_y);
-		//print_map(character_x, character_y);
+		print_map(character_x, character_y);
 		check_clear(&clear);
 		move_character(character_x, character_y);
 	}
 }
 //------------------------------------------------------------
-void scan_logo()
+void print_UI(int menu,int *select_menu)
 {
-	FILE *logo_f = fopen("Logo.txt", "r");
-
-	for (i = 0;i < 6;i++)
-	{
-		for (j = 0;j < 79;j++)
-		{
-			fscanf(logo_f, "%c", &logo[i][j]);
-		}
-	}
-	fclose(logo_f);
-}
-void print_UI(int menu)
-{
+	char a;
 	if (menu == 0)
 	{
-		gotoxy(0, 5);
-		for (i = 0;i < 7;i++)
-		{
-			for (j = 0;j < 79;j++)
-			{
-				if (logo[i][j] == '0')
-					printf(" ");
-				else if (logo[i][j] == "1")
-					printf("#");
-			}
-		}
+		gotoxy(40, 5);
+		printf("      #   #                           #######");
+		gotoxy(40, 6);
+		printf("     # # # #   ####     #####   ####  #        #####   #####   ####     ####   #### ");
+		gotoxy(40, 7);
+		printf("    #   #  #  #    #       #   #    # #       #       #       #    #    #   # #    #");
+		gotoxy(40, 8);
+		printf("   #       # #     #      #    ###### #######  ####  #       #     #    #   # ######");
+		gotoxy(40, 9);
+		printf("  #        # #     ##    #     #      #            #  #      #     ##   ####  #     ");
+		gotoxy(40, 10);
+		printf(" #         #  ####  ##  #####   ####  ####### #####    #####  ####  ##  #      #### ");
+		gotoxy(40, 11);
+		printf("                                                                        #           ");
+		gotoxy(40, 12);
+		printf("                                                                        #           ");
+		gotoxy(74, 16);
+		printf("Preas any key...");
+		a = getch();
+		if (a != '-')
+			*select_menu = 1;
+		system("cls");
 	}
 	else if (menu == 1)
 	{
@@ -130,7 +128,7 @@ void move_character(int cx, int cy)
 {
 	char key;
 
-	key = getch();
+	key = _getch();
 
 	if (key == UP)
 	{
