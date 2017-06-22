@@ -1,10 +1,11 @@
-//------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 #include <stdio.h>
 #include <windows.h>
 #include <time.h>
 #include <stdlib.h>
 #include <conio.h>
-//------------------------------------------------------------
+#include <math.h>
+//------------------------------------------------------------------------------------------------------------------------
 #define WIDE 57
 #define HIGH 29
 #define VISION 4
@@ -12,11 +13,13 @@
 #define LEFT 75
 #define RIGHT 77
 #define DOWN 80
-//------------------------------------------------------------
+#define xr (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
+//------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
 char map[HIGH][WIDE];
-//------------------------------------------------------------
-void print_UI(int menu,int *select_menu);
+//------------------------------------------------------------------------------------------------------------------------
+void print_logo();
+void print_UI();
 void scan_map();
 void print_map(int cx, int cy);
 void move_character(int cx,int cy);
@@ -24,57 +27,63 @@ void search_character(int *x, int*y);
 void check_clear(int *clear);
 void RemoveCursor();
 void gotoxy(int x, int y);
-//------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------
 int main()
 {
-	int select_menu = 0;
 	int clear = 0;
 	int character_y;
 	int character_x;
 
 	RemoveCursor();
 	scan_map();
-	print_UI(select_menu,&select_menu);
+	print_logo();
 	while (clear != 1)
 	{
-		print_UI(select_menu, &select_menu);
+		print_UI();
 		search_character(&character_x, &character_y);
 		print_map(character_x, character_y);
 		check_clear(&clear);
 		move_character(character_x, character_y);
 	}
 }
-//------------------------------------------------------------
-void print_UI(int menu,int *select_menu)
+//------------------------------------------------------------------------------------------------------------------------
+void print_logo()
 {
-	char a;
-	if (menu == 0)
+	gotoxy(40, 10);
+	printf("      @   @                           @@@@@@@");
+	gotoxy(40, 11);
+	printf("     @ @ @ @   @@@@     @@@@@   @@@@  @        @@@@@   @@@@@   @@@@     @@@@   @@@@ ");
+	gotoxy(40, 12);
+	printf("    @   @  @  @    @       @   @    @ @       @       @       @    @    @   @ @    @");
+	gotoxy(40, 13);
+	printf("   @       @ @     @      @    @@@@@@ @@@@@@@  @@@@  @       @     @    @   @ @@@@@@");
+	gotoxy(40, 14);
+	printf("  @        @ @     @@    @     @      @            @  @      @     @@   @@@@  @     ");
+	gotoxy(40, 15);
+	printf(" @         @  @@@@  @@  @@@@@   @@@@  @@@@@@@ @@@@@    @@@@@  @@@@  @@  @      @@@@ ");
+	gotoxy(40, 16);
+	printf("                                                                        @           ");
+	gotoxy(40, 17);
+	printf("                                                                        @           ");
+	while (1)
 	{
-		gotoxy(40, 5);
-		printf("      #   #                           #######");
-		gotoxy(40, 6);
-		printf("     # # # #   ####     #####   ####  #        #####   #####   ####     ####   #### ");
-		gotoxy(40, 7);
-		printf("    #   #  #  #    #       #   #    # #       #       #       #    #    #   # #    #");
-		gotoxy(40, 8);
-		printf("   #       # #     #      #    ###### #######  ####  #       #     #    #   # ######");
-		gotoxy(40, 9);
-		printf("  #        # #     ##    #     #      #            #  #      #     ##   ####  #     ");
-		gotoxy(40, 10);
-		printf(" #         #  ####  ##  #####   ####  ####### #####    #####  ####  ##  #      #### ");
-		gotoxy(40, 11);
-		printf("                                                                        #           ");
-		gotoxy(40, 12);
-		printf("                                                                        #           ");
-		gotoxy(74, 16);
+		gotoxy(74, 23);
 		printf("Preas any key...");
-		a = getch();
-		if (a != '-')
-			*select_menu = 1;
-		system("cls");
+		Sleep(500);
+		gotoxy(74, 23);
+		printf("                 ");
+		Sleep(200);
+		if (kbhit())
+		{
+			getch();
+			getch();
+			break;
+		}
 	}
-	else if (menu == 1)
-	{
+	system("cls");
+}
+void print_UI()
+{
 		gotoxy(114, 23);
 		printf("¢¸ FINSH");
 		gotoxy(116, 2);
@@ -87,7 +96,6 @@ void print_UI(int menu,int *select_menu)
 		printf("¡æ : Turn RIGHT");
 		gotoxy(116, 6);
 		printf("¡é : Turn DOWN");
-	}
 }
 void scan_map()
 {
@@ -109,7 +117,8 @@ void print_map(int cx, int cy)
 	{
 		for (j = 0;j < WIDE;j++)
 		{
-			if (cy + VISION > i&&cy - VISION<i&&cx + VISION>j&&cx - VISION < j)
+			//if (cy + VISION > i&&cy - VISION<i&&cx + VISION>j&&cx - VISION < j)
+			if (xr)
 			{
 				if (map[i][j] == '0')
 					printf("  ");
@@ -128,6 +137,7 @@ void move_character(int cx, int cy)
 {
 	char key;
 
+	key = _getch();
 	key = _getch();
 
 	if (key == UP)
