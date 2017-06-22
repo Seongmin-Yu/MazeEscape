@@ -4,7 +4,6 @@
 #include <time.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <math.h>
 //------------------------------------------------------------------------------------------------------------------------
 #define WIDE 57
 #define HIGH 29
@@ -13,6 +12,7 @@
 #define LEFT 75
 #define RIGHT 77
 #define DOWN 80
+#define ITEM_MAX 10
 #define xr (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
 //------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
@@ -20,9 +20,10 @@ char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo();
 void print_UI();
+void create_item(int *item_count);
 void scan_map();
 void print_map(int cx, int cy);
-void move_character(int cx,int cy);
+void move_character(int cx,int cy, int *have_item);
 void search_character(int *x, int*y);
 void check_clear(int *clear);
 void RemoveCursor();
@@ -33,6 +34,8 @@ int main()
 	int clear = 0;
 	int character_y;
 	int character_x;
+	int item_count = 0;
+	int have_item = 0;
 
 	RemoveCursor();
 	scan_map();
@@ -40,10 +43,11 @@ int main()
 	while (clear != 1)
 	{
 		print_UI();
+		create_item(&item_count);
 		search_character(&character_x, &character_y);
 		print_map(character_x, character_y);
 		check_clear(&clear);
-		move_character(character_x, character_y);
+		move_character(character_x, character_y, &have_item);
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -75,13 +79,13 @@ void print_logo()
 		Sleep(200);
 		if (kbhit())
 		{
-			getch();
-			getch();
+			if (getch() == 224)
+				getch();
 			break;
 		}
 	}
 	system("cls");
-}
+} 
 void print_UI()
 {
 		gotoxy(114, 23);
@@ -96,6 +100,25 @@ void print_UI()
 		printf("¡æ : Turn RIGHT");
 		gotoxy(116, 6);
 		printf("¡é : Turn DOWN");
+}
+void create_item(int *item_count)
+{
+	int item_x;
+	int item_y;
+
+	srand(time(NULL));
+
+	while (*item_count < ITEM_MAX)
+	{
+		item_x = rand() % WIDE;
+		item_y = rand() % HIGH;
+
+		if (map[item_y][item_x] == '0')
+		{
+			map[item_y][item_x] = '3';
+			*item_count++;
+		}
+	}
 }
 void scan_map()
 {
@@ -118,22 +141,24 @@ void print_map(int cx, int cy)
 		for (j = 0;j < WIDE;j++)
 		{
 			//if (cy + VISION > i&&cy - VISION<i&&cx + VISION>j&&cx - VISION < j)
-			if (xr)
-			{
+			//if (xr)
+			//{
 				if (map[i][j] == '0')
 					printf("  ");
 				else if (map[i][j] == '1')
 					printf("¡á");
 				else if (map[i][j] == '2')
 					printf("¿Ê");
-			}
+				else if (map[i][j] == '3')
+					printf("¨Æ");
+			/*}
 			else
-				printf("  ");
+				printf("  ");*/
 		}
 		printf("\n");
 	}
 }
-void move_character(int cx, int cy)
+void move_character(int cx, int cy,int *have_item)
 {
 	char key;
 
@@ -142,8 +167,12 @@ void move_character(int cx, int cy)
 
 	if (key == UP)
 	{
-		if (map[cy - 1][cx] == '0')
+		if (map[cy - 1][cx] == '0'|| map[cy - 1][cx] == '3')
 		{
+			if (map[cy - 1][cx] == '3'&&*have_item < ITEM_MAX)
+			{
+				*have_item++;
+			}
 			map[cy][cx] = '0';
 			map[cy - 1][cx] = '2';
 		}
@@ -152,6 +181,10 @@ void move_character(int cx, int cy)
 	{
 		if (map[cy][cx - 1] == '0')
 		{
+			if (map[cy][cx - 1] == '3'&&*have_item < ITEM_MAX)
+			{
+				*have_item++;
+			}
 			map[cy][cx] = '0';
 			map[cy][cx - 1] = '2';
 		}
@@ -160,6 +193,10 @@ void move_character(int cx, int cy)
 	{
 		if (map[cy][cx + 1] == '0')
 		{
+			if (map[cy][cx + 1] == '3'&&*have_item < ITEM_MAX)
+			{
+				*have_item++;
+			}
 			map[cy][cx] = '0';
 			map[cy][cx + 1] = '2';
 		}
@@ -168,6 +205,10 @@ void move_character(int cx, int cy)
 	{
 		if (map[cy + 1][cx] == '0')
 		{
+			if (map[cy + 1][cx] == '3'&&*have_item < ITEM_MAX)
+			{
+				*have_item++;
+			}
 			map[cy][cx] = '0';
 			map[cy + 1][cx] = '2';
 		}
