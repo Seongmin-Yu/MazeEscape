@@ -12,18 +12,20 @@
 #define LEFT 75
 #define RIGHT 77
 #define DOWN 80
-#define ITEM_MAX 10
+#define USE_ITEM 32
+#define C_ITEM_MAX 10
+#define H_ITEM_MAX 5
 #define xr (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
 //------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo();
-void print_UI();
+void print_UI(int have_item);
 void create_item(int *item_count);
 void scan_map();
 void print_map(int cx, int cy);
-void move_character(int cx,int cy, int *have_item);
+void character_function(int cx, int cy, int *have_item, int *item_count);
 void search_character(int *x, int*y);
 void check_clear(int *clear);
 void RemoveCursor();
@@ -42,12 +44,12 @@ int main()
 	print_logo();
 	while (clear != 1)
 	{
-		print_UI();
+		print_UI(have_item);
 		create_item(&item_count);
 		search_character(&character_x, &character_y);
 		print_map(character_x, character_y);
 		check_clear(&clear);
-		move_character(character_x, character_y, &have_item);
+		character_function(character_x, character_y, &have_item, &item_count);
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -85,21 +87,35 @@ void print_logo()
 		}
 	}
 	system("cls");
-} 
-void print_UI()
+}
+void print_UI(int have_item)
 {
-		gotoxy(114, 23);
-		printf("¢¸ FINSH");
-		gotoxy(116, 2);
-		printf("How to play");
-		gotoxy(116, 3);
-		printf("¡è : Turn UP");
-		gotoxy(116, 4);
-		printf("¡ç : Turn LEFT");
-		gotoxy(116, 5);
-		printf("¡æ : Turn RIGHT");
-		gotoxy(116, 6);
-		printf("¡é : Turn DOWN");
+	i = 0;
+	gotoxy(114, 23);
+	printf("¢¸ FINSH");
+	gotoxy(116, 2);
+	printf("How to play");
+	gotoxy(116, 3);
+	printf("¡è : Turn UP");
+	gotoxy(116, 4);
+	printf("¡ç : Turn LEFT");
+	gotoxy(116, 5);
+	printf("¡æ : Turn RIGHT");
+	gotoxy(116, 6);
+	printf("¡é : Turn DOWN");
+	gotoxy(116, 8);
+	printf("Item : ");
+	while (i != H_ITEM_MAX)
+	{
+		i++;
+		if (have_item != 0)
+		{
+			printf("¡á");
+			have_item--;
+		}
+		else
+			printf("¡à");
+	}
 }
 void create_item(int *item_count)
 {
@@ -108,7 +124,7 @@ void create_item(int *item_count)
 
 	srand(time(NULL));
 
-	while (*item_count < ITEM_MAX)
+	while (*item_count < C_ITEM_MAX)
 	{
 		item_x = rand() % WIDE;
 		item_y = rand() % HIGH;
@@ -116,7 +132,7 @@ void create_item(int *item_count)
 		if (map[item_y][item_x] == '0')
 		{
 			map[item_y][item_x] = '3';
-			*item_count++;
+			(*item_count)++;
 		}
 	}
 }
@@ -141,8 +157,8 @@ void print_map(int cx, int cy)
 		for (j = 0;j < WIDE;j++)
 		{
 			//if (cy + VISION > i&&cy - VISION<i&&cx + VISION>j&&cx - VISION < j)
-			//if (xr)
-			//{
+			if (xr)
+			{
 				if (map[i][j] == '0')
 					printf("  ");
 				else if (map[i][j] == '1')
@@ -151,27 +167,29 @@ void print_map(int cx, int cy)
 					printf("¿Ê");
 				else if (map[i][j] == '3')
 					printf("¨Æ");
-			/*}
+			}
 			else
-				printf("  ");*/
+				printf("  ");
 		}
 		printf("\n");
 	}
 }
-void move_character(int cx, int cy,int *have_item)
+void character_function(int cx, int cy, int *have_item, int *item_count)
 {
 	char key;
 
 	key = _getch();
-	key = _getch();
+	if (key == 224)
+		key = getch();
 
 	if (key == UP)
 	{
-		if (map[cy - 1][cx] == '0'|| map[cy - 1][cx] == '3')
+		if (map[cy - 1][cx] == '0' || map[cy - 1][cx] == '3')
 		{
-			if (map[cy - 1][cx] == '3'&&*have_item < ITEM_MAX)
+			if (map[cy - 1][cx] == '3'&&*have_item < H_ITEM_MAX)
 			{
-				*have_item++;
+				(*have_item)++;
+				(*item_count)--;
 			}
 			map[cy][cx] = '0';
 			map[cy - 1][cx] = '2';
@@ -179,11 +197,12 @@ void move_character(int cx, int cy,int *have_item)
 	}
 	else if (key == LEFT)
 	{
-		if (map[cy][cx - 1] == '0')
+		if (map[cy][cx - 1] == '0' || map[cy][cx - 1] == '3')
 		{
-			if (map[cy][cx - 1] == '3'&&*have_item < ITEM_MAX)
+			if (map[cy][cx - 1] == '3'&&*have_item < H_ITEM_MAX)
 			{
-				*have_item++;
+				(*have_item)++;
+				(*item_count)--;
 			}
 			map[cy][cx] = '0';
 			map[cy][cx - 1] = '2';
@@ -191,11 +210,12 @@ void move_character(int cx, int cy,int *have_item)
 	}
 	else if (key == RIGHT)
 	{
-		if (map[cy][cx + 1] == '0')
+		if (map[cy][cx + 1] == '0' || map[cy][cx + 1] == '3')
 		{
-			if (map[cy][cx + 1] == '3'&&*have_item < ITEM_MAX)
+			if (map[cy][cx + 1] == '3'&&*have_item < H_ITEM_MAX)
 			{
-				*have_item++;
+				(*have_item)++;
+				(*item_count)--;
 			}
 			map[cy][cx] = '0';
 			map[cy][cx + 1] = '2';
@@ -203,15 +223,37 @@ void move_character(int cx, int cy,int *have_item)
 	}
 	else if (key == DOWN)
 	{
-		if (map[cy + 1][cx] == '0')
+		if (map[cy + 1][cx] == '0' || map[cy + 1][cx] == '3')
 		{
-			if (map[cy + 1][cx] == '3'&&*have_item < ITEM_MAX)
+			if (map[cy + 1][cx] == '3'&&*have_item < H_ITEM_MAX)
 			{
-				*have_item++;
+				(*have_item)++;
+				(*item_count)--;
 			}
 			map[cy][cx] = '0';
 			map[cy + 1][cx] = '2';
 		}
+	}
+	else if (key == USE_ITEM)
+	{
+		gotoxy(0, 0);
+		for (i = 0;i < HIGH;i++)
+		{
+			for (j = 0;j < WIDE;j++)
+			{
+				if (map[i][j] == '0')
+					printf("  ");
+				else if (map[i][j] == '1')
+					printf("¡á");
+				else if (map[i][j] == '2')
+					printf("¿Ê");
+				else if (map[i][j] == '3')
+					printf("¨Æ");
+			}
+			printf("\n");
+		}
+		Sleep(1500);
+		(*have_item)--;
 	}
 }
 void search_character(int *x, int*y)
