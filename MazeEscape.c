@@ -22,6 +22,7 @@ char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo();
 void print_UI(int have_item);
+void print_clear();
 void create_item(int *item_count);
 void scan_map();
 void print_map(int cx, int cy);
@@ -51,6 +52,7 @@ int main()
 		check_clear(&clear);
 		character_function(character_x, character_y, &have_item, &item_count);
 	}
+	print_clear();
 }
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo()
@@ -116,6 +118,44 @@ void print_UI(int have_item)
 		else
 			printf("¡à");
 	}
+}
+void print_clear()
+{
+	gotoxy(0, 0);
+	for (i = 0;i < HIGH;i++)
+	{
+		for (j = 0;j < WIDE;j++)
+		{
+			if (map[i][j] == '0')
+				printf("  ");
+			else if (map[i][j] == '1')
+				printf("¡á");
+			else if (map[i][j] == '2')
+				printf("¿Ê");
+			else if (map[i][j] == '3')
+				printf("¨Æ");
+			Sleep(5);
+		}
+		printf("\n");
+	}
+	system("cls");
+
+	gotoxy(60, 10);
+	printf("  ######  ##");
+	gotoxy(60, 11);
+	printf(" #        ##");
+	gotoxy(60, 12);
+	printf("#         ##   #####    ####    # ####");
+	gotoxy(60, 13);
+	printf("#         ##  #     #  #    #   ##    #");
+	gotoxy(60, 14);
+	printf("#         ##  ######  #     #   #");
+	gotoxy(60, 15);
+	printf(" #        ##  #       #    #    #");
+	gotoxy(60, 16);
+	printf("  ######  ##   #####   #### ##  #");
+	gotoxy(0, 40);
+	printf(" ");
 }
 void create_item(int *item_count)
 {
