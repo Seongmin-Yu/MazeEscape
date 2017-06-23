@@ -6,8 +6,8 @@
 #include <conio.h>
 #include <math.h>
 //------------------------------------------------------------------------------------------------------------------------
-#define WIDE 57
-#define HIGH 29
+#define WIDTH 57
+#define HEIGHT 29
 #define VISION 4
 #define UP 72
 #define LEFT 75
@@ -16,12 +16,12 @@
 #define xr (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
 //------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
-char map[HIGH][WIDE];
+char map[HEIGHT][WIDTH];
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo();
 void print_UI();
-void scan_map();
-void print_map(int cx, int cy);
+FILE* scan_map();
+void print_map(int cx, int cy); 
 void move_character(int cx,int cy);
 void search_character(int *x, int*y);
 void check_clear(int *clear);
@@ -33,9 +33,14 @@ int main()
 	int clear = 0;
 	int character_y;
 	int character_x;
+	FILE* cp; 
 
 	RemoveCursor();
-	scan_map();
+	cp = scan_map();
+	
+	if(cp == NULL)
+		return 0;
+		
 	print_logo();
 	while (clear != 1)
 	{
@@ -45,6 +50,8 @@ int main()
 		check_clear(&clear);
 		move_character(character_x, character_y);
 	}
+	system("cls");
+	printf("A¡þ¢¬¢ç¨úi!");
 }
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo()
@@ -75,47 +82,52 @@ void print_logo()
 		Sleep(200);
 		if (kbhit())
 		{
-			getch();
-			getch();
+			if(getch() == 224)
+				getch();
 			break;
 		}
 	}
 	system("cls");
 }
+
 void print_UI()
 {
 		gotoxy(114, 23);
-		printf("¢¸ FINSH");
+		printf("¡Ë¢¬ FINSH");
 		gotoxy(116, 2);
 		printf("How to play");
 		gotoxy(116, 3);
-		printf("¡è : Turn UP");
+		printf("¢®e : Turn UP");
 		gotoxy(116, 4);
-		printf("¡ç : Turn LEFT");
+		printf("¢®c : Turn LEFT");
 		gotoxy(116, 5);
-		printf("¡æ : Turn RIGHT");
+		printf("¢®©¡ : Turn RIGHT");
 		gotoxy(116, 6);
-		printf("¡é : Turn DOWN");
+		printf("¢®e : Turn DOWN");
 }
-void scan_map()
+
+FILE* scan_map()
 {
 	FILE *map_f = fopen("MazeMap1.txt", "r");
 
-	for (i = 0;i < HIGH;i++)
+	if(map_f == NULL)
 	{
-		for (j = 0;j < WIDE;j++)
-		{
-			fscanf(map_f, "%c", &map[i][j]);
-		}
+		printf("¢¬E ¡¤I¥ìa¢¯¢® ¨öC¨¡¨¢CI¢¯¢¥¨öA¢¥I¢¥U!");
+		return map_f;
 	}
+	
+	for (i = 0;i < HEIGHT;i++)
+		for (j = 0;j < WIDTH;j++)
+			fscanf(map_f, "%c", &map[i][j]);
 	fclose(map_f);
 }
+
 void print_map(int cx, int cy)
 {
 	gotoxy(0, 0);
-	for (i = 0;i < HIGH;i++)
+	for (i = 0;i < HEIGHT;i++)
 	{
-		for (j = 0;j < WIDE;j++)
+		for (j = 0;j < WIDTH;j++)
 		{
 			//if (cy + VISION > i&&cy - VISION<i&&cx + VISION>j&&cx - VISION < j)
 			if (xr)
@@ -123,9 +135,9 @@ void print_map(int cx, int cy)
 				if (map[i][j] == '0')
 					printf("  ");
 				else if (map[i][j] == '1')
-					printf("¡á");
+					printf("¢®a");
 				else if (map[i][j] == '2')
-					printf("¿Ê");
+					printf("¢¯E");
 			}
 			else
 				printf("  ");
@@ -136,10 +148,10 @@ void print_map(int cx, int cy)
 void move_character(int cx, int cy)
 {
 	char key;
-
-	key = _getch();
-	key = _getch();
-
+	
+	if((key = getch()) == 224)
+		key = getch();
+	
 	if (key == UP)
 	{
 		if (map[cy - 1][cx] == '0')
@@ -173,25 +185,25 @@ void move_character(int cx, int cy)
 		}
 	}
 }
+
 void search_character(int *x, int*y)
 {
-	for (i = 0;i < HIGH;i++)
-	{
-		for (j = 0;j < WIDE;j++)
-		{
+	for (i = 0;i < HEIGHT;i++)
+		for (j = 0;j < WIDTH;j++)
 			if (map[i][j] == '2')
 			{
 				*x = j;
 				*y = i;
+				return;
 			}
-		}
-	}
 }
+
 void check_clear(int *clear)
 {
 	if (map[23][55] == '2')
 		*clear = 1;
 }
+
 void RemoveCursor()
 {
 	CONSOLE_CURSOR_INFO curInfo;
