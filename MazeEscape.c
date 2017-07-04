@@ -1,4 +1,3 @@
-//------------------------------------------------------------------------------------------------------------------------
 #include <stdio.h>
 #include <windows.h>
 #include <time.h>
@@ -22,7 +21,7 @@ char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo();
 void print_UI(int have_item);
-void print_clear();
+void print_clear(int *clear);
 void create_item(int *item_count);
 void scan_map();
 void print_map(int cx, int cy);
@@ -40,19 +39,23 @@ int main()
 	int item_count = 0;
 	int have_item = 0;
 
+	system("title ¿Ã±∏µøº∫");
 	RemoveCursor();
 	scan_map();
 	print_logo();
-	while (clear != 1)
+	while (clear < 2)
 	{
-		print_UI(have_item);
-		create_item(&item_count);
-		search_character(&character_x, &character_y);
-		print_map(character_x, character_y);
-		check_clear(&clear);
-		character_function(character_x, character_y, &have_item, &item_count);
+		while (clear != 1)
+		{
+			print_UI(have_item);
+			create_item(&item_count);
+			search_character(&character_x, &character_y);
+			print_map(character_x, character_y);
+			check_clear(&clear);
+			character_function(character_x, character_y, &have_item, &item_count);
+		}
+		print_clear(&clear);
 	}
-	print_clear();
 }
 //------------------------------------------------------------------------------------------------------------------------
 void print_logo()
@@ -119,7 +122,7 @@ void print_UI(int have_item)
 			printf("°‡");
 	}
 }
-void print_clear()
+void print_clear(int *clear)
 {
 	gotoxy(0, 0);
 	for (i = 0;i < HIGH;i++)
@@ -134,10 +137,11 @@ void print_clear()
 				printf("ø ");
 			else if (map[i][j] == '3')
 				printf("®∆");
-			Sleep(5);
+			Sleep(2);
 		}
 		printf("\n");
 	}
+	Sleep(500);
 	system("cls");
 
 	gotoxy(60, 10);
@@ -156,6 +160,7 @@ void print_clear()
 	printf("  ######  ##   #####   #### ##  #");
 	gotoxy(0, 40);
 	printf(" ");
+	(*clear)++;
 }
 void create_item(int *item_count)
 {
@@ -276,24 +281,27 @@ void character_function(int cx, int cy, int *have_item, int *item_count)
 	}
 	else if (key == USE_ITEM)
 	{
-		gotoxy(0, 0);
-		for (i = 0;i < HIGH;i++)
+		if (*have_item > 0)
 		{
-			for (j = 0;j < WIDE;j++)
+			gotoxy(0, 0);
+			for (i = 0;i < HIGH;i++)
 			{
-				if (map[i][j] == '0')
-					printf("  ");
-				else if (map[i][j] == '1')
-					printf("°·");
-				else if (map[i][j] == '2')
-					printf("ø ");
-				else if (map[i][j] == '3')
-					printf("®∆");
+				for (j = 0;j < WIDE;j++)
+				{
+					if (map[i][j] == '0')
+						printf("  ");
+					else if (map[i][j] == '1')
+						printf("°·");
+					else if (map[i][j] == '2')
+						printf("ø ");
+					else if (map[i][j] == '3')
+						printf("®∆");
+				}
+				printf("\n");
 			}
-			printf("\n");
+			Sleep(1500);
+			(*have_item)--;
 		}
-		Sleep(1500);
-		(*have_item)--;
 	}
 }
 void search_character(int *x, int*y)
