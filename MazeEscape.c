@@ -1,3 +1,4 @@
+//------------------------------------------------------------------------------------------------------------------------
 #include <stdio.h>
 #include <windows.h>
 #include <time.h>
@@ -21,32 +22,37 @@
 int i = 0, j = 0;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
-int Logo_UI(int *regame);
-void scan_map(int select_map);
+int Logo_UI(int *regame,int *sel_vi, int *sel_map);
+void print_UI(int have_item, int select_map);
 void Exit_UI();
-void create_item(int *item_count);
-void search_character(int *x, int*y);
-void print_UI(int have_item);
-void print_map(int cx, int cy);
-void character_function(int cx, int cy, int *have_item, int *item_count);
-void check_clear(int *clear, int select_map);
+void scan_map(int select_map);
+void print_map(int cx, int cy, int sel_vi);
 void print_clear();
+void search_character(int *x, int*y);
+void check_clear(int *clear);
+void character_function(int cx, int cy, int *have_item, int *item_count);
+void create_item(int *item_count);
 void RemoveCursor();
 void gotoxy(int x, int y);
+//------------------------------------------------------------------------------------------------------------------------
 int main()
 {
+	system("title MazeEscape");
+	system("mode con:cols=190 lines=45");
+
 	int item_count = 0;
 	int have_item = 0;
 	int clear = 1;
 	int character_y;
 	int character_x;
 	int select_map = 0;
+	int select_vision = 0;
 	int regame = 1;
 
 	while (regame)
 	{
 		RemoveCursor();
-		select_map = Logo_UI(&regame);
+		Logo_UI(&regame,&select_vision,&select_map);
 		system("cls");
 		if (regame == 1)
 		{
@@ -55,19 +61,24 @@ int main()
 			{
 				create_item(&item_count);
 				search_character(&character_x, &character_y);
-				print_UI(have_item);
-				print_map(character_x, character_y);
-				character_function(character_x, character_y, &have_item, &item_count);
+				print_UI(have_item, select_map);
+				print_map(character_x, character_y, select_vision);
 				check_clear(&clear, select_map);
+				character_function(character_x, character_y, &have_item, &item_count);
 			}
 			print_clear();
+			clear = 1;
+			item_count = 0;
 		}
 	}
 	Exit_UI();
 }
-int Logo_UI(int *regame)
+//------------------------------------------------------------------------------------------------------------------------
+int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 {
-	int sel_map = 0;
+	int status = 1;
+	int select_map = 0;
+	int select_vision = 0;
 	char key;
 
 	gotoxy(40, 10);
@@ -86,71 +97,198 @@ int Logo_UI(int *regame)
 	printf("                                                                        @           ");
 	gotoxy(40, 17);
 	printf("                                                                        @           ");
-	while (1)
+	while (status)
 	{
 		if (kbhit())
 		{
 			key = getch();
 			if (key == ENTER)
 			{
-				if (sel_map == 2)
+				if (select_map == 3)
+				{
 					*regame = 0;
-				return sel_map;
-				break;
+					return 0;
+				}
+				status = 0;
 			}
 			else if (key == UP)
 			{
-				if (sel_map > 0)
-					sel_map -= 1;
+				if (select_map > 0)
+					select_map -= 1;
 			}
 			else if (key == DOWN)
 			{
-				if (sel_map < 2)
-					sel_map += 1;
+				if (select_map < 3)
+					select_map += 1;
 			}
 		}
-		if (sel_map == 0)
+		if (select_map == 0)
 		{
+			gotoxy(74, 22);
+			printf("忙式式式式忖");
 			gotoxy(74, 23);
-			printf("Ⅱ Easy");
+			printf("弛Ⅱ Easy 弛");
 			gotoxy(74, 24);
-			printf("   Nomal");
+			printf("弛   Nomal弛");
 			gotoxy(74, 25);
-			printf("   Exit");
-			Sleep(200);
-			gotoxy(74, 23);
-			printf("   Easy");
-			Sleep(200);
+			printf("弛   Hard 弛");
+			gotoxy(74, 26);
+			printf("弛   Exit 弛");
+			gotoxy(74, 27);
+			printf("戌式式式式戎");
 
 		}
-		else if (sel_map == 1)
+		else if (select_map == 1)
 		{
+			gotoxy(74, 22);
+			printf("忙式式式式忖");
 			gotoxy(74, 23);
-			printf("   Easy");
+			printf("弛   Easy 弛");
 			gotoxy(74, 24);
-			printf("Ⅱ Nomal");
+			printf("弛Ⅱ Nomal弛");
 			gotoxy(74, 25);
-			printf("   Exit");
-			Sleep(200);
-			gotoxy(74, 24);
-			printf("   Nomal");
-			Sleep(200);
+			printf("弛   Hard 弛");
+			gotoxy(74, 26);
+			printf("弛   Exit 弛");
+			gotoxy(74, 27);
+			printf("戌式式式式戎");
 		}
-		else if (sel_map == 2)
+		else if (select_map == 2)
 		{
+			gotoxy(74, 22);
+			printf("忙式式式式忖");
 			gotoxy(74, 23);
-			printf("   Easy");
+			printf("弛   Easy 弛");
 			gotoxy(74, 24);
-			printf("   Nomal");
+			printf("弛   Nomal弛");
 			gotoxy(74, 25);
-			printf("Ⅱ Exit");
-			Sleep(200);
+			printf("弛Ⅱ Hard 弛");
+			gotoxy(74, 26);
+			printf("弛   Exit 弛");
+			gotoxy(74, 27);
+			printf("戌式式式式戎");
+		}
+		else if (select_map == 3)
+		{
+			gotoxy(74, 22);
+			printf("忙式式式式忖");
+			gotoxy(74, 23);
+			printf("弛   Easy 弛");
+			gotoxy(74, 24);
+			printf("弛   Nomal弛");
 			gotoxy(74, 25);
-			printf("   Exit");
-			Sleep(200);
+			printf("弛   Hard 弛");
+			gotoxy(74, 26);
+			printf("弛Ⅱ Exit 弛");
+			gotoxy(74, 27);
+			printf("戌式式式式戎");
+		}
+	}
+	status = 1;
+	gotoxy(74, 25);
+	printf("           ");
+	gotoxy(74, 26);
+	printf("           ");
+	gotoxy(74, 27);
+	printf("           ");
+	while (status)
+	{
+		if (kbhit())
+		{
+			key = getch();
+			if (key == ENTER)
+				status = 0;
+			else if (key == UP)
+				select_vision = 0;
+			else if (key == DOWN)
+				select_vision = 1;
+		}
+		if (select_vision == 0)
+		{
+			gotoxy(74, 22);
+			printf("忙式式式式式忖");
+			gotoxy(74, 23);
+			printf("弛Ⅱ Squre  弛");
+			gotoxy(74, 24);
+			printf("弛   Circle 弛");
+			gotoxy(74, 25);
+			printf("戌式式式式式戎");
+
+		}
+		else if (select_vision == 1)
+		{
+			gotoxy(74, 22);
+			printf("忙式式式式式忖");
+			gotoxy(74, 23);
+			printf("弛   Squre  弛");
+			gotoxy(74, 24);
+			printf("弛Ⅱ Circle 弛");
+			gotoxy(74, 25);
+			printf("戌式式式式式戎");
 		}
 	}
 	system("cls");
+	*sel_vi = select_vision;
+	*sel_map = select_map;
+}
+void print_UI(int have_item, int select_map)
+{
+	i = 0;
+	if (select_map == 0)
+	{
+		gotoxy(114, 23);
+		printf("９ FINSH");
+	}
+	else if (select_map == 1)
+	{
+		gotoxy(114, 23);
+		printf("９ FINSH");
+	}
+	gotoxy(116, 2);
+	printf("How to play");
+	gotoxy(116, 3);
+	printf("∟ : Turn UP");
+	gotoxy(116, 4);
+	printf("∠ : Turn LEFT");
+	gotoxy(116, 5);
+	printf("⊥ : Turn RIGHT");
+	gotoxy(116, 6);
+	printf("⊿ : Turn DOWN");
+	gotoxy(116, 7);
+	printf("Space : Use Item");
+	gotoxy(116, 10);
+	printf("Item : ");
+	while (i != H_ITEM_MAX)
+	{
+		i++;
+		if (have_item != 0)
+		{
+			printf("﹥");
+			have_item--;
+		}
+		else
+			printf("﹤");
+	}
+}
+void Exit_UI()
+{
+	system("cls");
+	gotoxy(70, 13);
+	printf("@@@@@@@@              @");
+	gotoxy(70, 14);
+	printf("@                @    @");
+	gotoxy(70, 15);
+	printf("@                   @@@@@");
+	gotoxy(70, 16);
+	printf("@@@@@@@@  @  @   @    @");
+	gotoxy(70, 17);
+	printf("@          @@    @    @");
+	gotoxy(70, 18);
+	printf("@          @@    @    @");
+	gotoxy(70, 19);
+	printf("@@@@@@@@  @  @   @    @");
+	gotoxy(0, 40);
+	printf(" ");
 }
 void scan_map(int select_map)
 {
@@ -178,45 +316,101 @@ void scan_map(int select_map)
 		}
 		fclose(map_f2);
 	}
-}
-void Exit_UI()
-{
-	system("cls");
-	gotoxy(70, 13);
-	printf("@@@@@@@@              @");
-	gotoxy(70, 14);
-	printf("@                @    @");
-	gotoxy(70, 15);
-	printf("@                   @@@@@");
-	gotoxy(70, 16);
-	printf("@@@@@@@@  @  @   @    @");
-	gotoxy(70, 17);
-	printf("@          @@    @    @");
-	gotoxy(70, 18);
-	printf("@          @@    @    @");
-	gotoxy(70, 19);
-	printf("@@@@@@@@  @  @   @    @");
-	gotoxy(0, 40);
-	printf(" ");
-}
-void create_item(int *item_count)
-{
-	int item_x;
-	int item_y;
-
-	srand(time(NULL));
-
-	while (*item_count < C_ITEM_MAX)
+	else if (select_map == 2)
 	{
-		item_x = rand() % WIDE;
-		item_y = rand() % HIGH;
-
-		if (map[item_y][item_x] == '0')
+		FILE *map_f3 = fopen("MazeMap3.txt", "r");
+		for (i = 0;i < HIGH;i++)
 		{
-			map[item_y][item_x] = '3';
-			(*item_count)++;
+			for (j = 0;j < WIDE;j++)
+			{
+				fscanf(map_f3, "%c", &map[i][j]);
+			}
 		}
+		fclose(map_f3);
 	}
+}
+void print_map(int cx, int cy, int sel_vi)
+{
+	gotoxy(0, 0);
+	for (i = 0;i < HIGH;i++)
+	{
+		for (j = 0;j < WIDE;j++)
+		{
+			if (sel_vi == 0)
+			{
+				if (Squre)
+				{
+					if (map[i][j] == '0')
+						printf("  ");
+					else if (map[i][j] == '1')
+						printf("﹥");
+					else if (map[i][j] == '2')
+						printf("褡");
+					else if (map[i][j] == '3')
+						printf("事");
+				}
+				else
+					printf("  ");
+			}
+			else if (sel_vi == 1)
+			{
+				if (Circle)
+				{
+					if (map[i][j] == '0')
+						printf("  ");
+					else if (map[i][j] == '1')
+						printf("﹥");
+					else if (map[i][j] == '2')
+						printf("褡");
+					else if (map[i][j] == '3')
+						printf("事");
+				}
+				else
+					printf("  ");
+			}
+		}
+		printf("\n");
+	}
+}
+void print_clear()
+{
+	int status = 1;
+
+	gotoxy(0, 0);
+	for (i = 0;i < HIGH;i++)
+	{
+		for (j = 0;j < WIDE;j++)
+		{
+			if (map[i][j] == '0')
+				printf("  ");
+			else if (map[i][j] == '1')
+				printf("﹥");
+			else if (map[i][j] == '2')
+				printf("褡");
+			else if (map[i][j] == '3')
+				printf("事");
+			Sleep(2);
+		}
+		printf("\n");
+	}
+	Sleep(500);
+	system("cls");
+
+	gotoxy(60, 10);
+	printf("  ######  ##");
+	gotoxy(60, 11);
+	printf(" #        ##");
+	gotoxy(60, 12);
+	printf("#         ##   #####    ####    # ####");
+	gotoxy(60, 13);
+	printf("#         ##  #     #  #    #   ##    #");
+	gotoxy(60, 14);
+	printf("#         ##  ######  #     #   #");
+	gotoxy(60, 15);
+	printf(" #        ##  #       #    #    #");
+	gotoxy(60, 16);
+	printf("  ######  ##   #####   #### ##  #");
+	Sleep(1500);
 }
 void search_character(int *x, int*y)
 {
@@ -232,59 +426,10 @@ void search_character(int *x, int*y)
 		}
 	}
 }
-void print_UI(int have_item)
+void check_clear(int *clear)
 {
-	i = 0;
-	gotoxy(114, 23);
-	printf("９ FINSH");
-	gotoxy(116, 2);
-	printf("How to play");
-	gotoxy(116, 3);
-	printf("∟ : Turn UP");
-	gotoxy(116, 4);
-	printf("∠ : Turn LEFT");
-	gotoxy(116, 5);
-	printf("⊥ : Turn RIGHT");
-	gotoxy(116, 6);
-	printf("⊿ : Turn DOWN");
-	gotoxy(116, 8);
-	printf("Item : ");
-	while (i != H_ITEM_MAX)
-	{
-		i++;
-		if (have_item != 0)
-		{
-			printf("﹥");
-			have_item--;
-		}
-		else
-			printf("﹤");
-	}
-}
-void print_map(int cx, int cy)
-{
-	gotoxy(0, 0);
-	for (i = 0;i < HIGH;i++)
-	{
-		for (j = 0;j < WIDE;j++)
-		{
-			//if (Squre)
-			if (Circle)
-			{
-				if (map[i][j] == '0')
-					printf("  ");
-				else if (map[i][j] == '1')
-					printf("﹥");
-				else if (map[i][j] == '2')
-					printf("褡");
-				else if (map[i][j] == '3')
-					printf("事");
-			}
-			else
-				printf("  ");
-		}
-		printf("\n");
-	}
+		if (map[23][55] == '2')
+			*clear = 0;
 }
 void character_function(int cx, int cy, int *have_item, int *item_count)
 {
@@ -371,57 +516,24 @@ void character_function(int cx, int cy, int *have_item, int *item_count)
 		}
 	}
 }
-void check_clear(int *clear, int select_map)
+void create_item(int *item_count)
 {
-	if (select_map == 0)
-	{
-		if (map[23][55] == '2')
-			*clear = 0;
-	}
-	else if (select_map == 1)
-	{
-		if (map[6][56] == '2')
-			*clear = 0;
-	}
-}
-void print_clear()
-{
-	gotoxy(0, 0);
-	for (i = 0;i < HIGH;i++)
-	{
-		for (j = 0;j < WIDE;j++)
-		{
-			if (map[i][j] == '0')
-				printf("  ");
-			else if (map[i][j] == '1')
-				printf("﹥");
-			else if (map[i][j] == '2')
-				printf("褡");
-			else if (map[i][j] == '3')
-				printf("事");
-			Sleep(2);
-		}
-		printf("\n");
-	}
-	Sleep(500);
-	system("cls");
+	int item_x;
+	int item_y;
 
-	gotoxy(60, 10);
-	printf("  ######  ##");
-	gotoxy(60, 11);
-	printf(" #        ##");
-	gotoxy(60, 12);
-	printf("#         ##   #####    ####    # ####");
-	gotoxy(60, 13);
-	printf("#         ##  #     #  #    #   ##    #");
-	gotoxy(60, 14);
-	printf("#         ##  ######  #     #   #");
-	gotoxy(60, 15);
-	printf(" #        ##  #       #    #    #");
-	gotoxy(60, 16);
-	printf("  ######  ##   #####   #### ##  #");
-	gotoxy(0, 40);
-	printf(" ");
+	srand(time(NULL));
+
+	while (*item_count < C_ITEM_MAX)
+	{
+		item_x = rand() % WIDE;
+		item_y = rand() % HIGH;
+
+		if (map[item_y][item_x] == '0')
+		{
+			map[item_y][item_x] = '3';
+			(*item_count)++;
+		}
+	}
 }
 void RemoveCursor()
 {
@@ -435,3 +547,4 @@ void gotoxy(int x, int y)
 	COORD Pos = { x, y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
+//------------------------------------------------------------------------------------------------------------------------
