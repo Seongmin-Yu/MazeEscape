@@ -4,7 +4,11 @@
 #include <time.h>
 #include <stdlib.h>
 #include <conio.h>
+#include<mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 //------------------------------------------------------------------------------------------------------------------------
+#define playMUSIC TEXT("play.wav")
+#define logoMUSIC TEXT("logo.wav")
 #define WIDE 57
 #define HIGH 29
 #define VISION 4
@@ -22,6 +26,8 @@
 int i = 0, j = 0;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
+void logo_MUSIC();
+void play_MUSIC();
 int Logo_UI(int *regame,int *sel_vi, int *sel_map);
 void print_UI(int have_item, int select_map);
 void Exit_UI();
@@ -51,11 +57,14 @@ int main()
 
 	while (regame)
 	{
+		logo_MUSIC();
 		RemoveCursor();
 		Logo_UI(&regame,&select_vision,&select_map);
 		system("cls");
+		PlaySound(0, 0, 0);
 		if (regame == 1)
 		{
+			play_MUSIC();
 			scan_map(select_map);
 			while (clear)
 			{
@@ -67,6 +76,7 @@ int main()
 				character_function(character_x, character_y, &have_item, &item_count);
 			}
 			print_clear();
+			PlaySound(0, 0, 0);
 			clear = 1;
 			item_count = 0;
 		}
@@ -74,6 +84,14 @@ int main()
 	Exit_UI();
 }
 //------------------------------------------------------------------------------------------------------------------------
+void logo_MUSIC()
+{
+	PlaySound(logoMUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+}
+void play_MUSIC()
+{
+	PlaySound(playMUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+}
 int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 {
 	int status = 1;
@@ -81,6 +99,7 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	int select_vision = 0;
 	char key;
 
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 	gotoxy(40, 10);
 	printf("      @   @                           @@@@@@@");
 	gotoxy(40, 11);
@@ -97,6 +116,7 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	printf("                                                                        @           ");
 	gotoxy(40, 17);
 	printf("                                                                        @           ");
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	while (status)
 	{
 		if (kbhit())
@@ -233,6 +253,7 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 }
 void print_UI(int have_item, int select_map)
 {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	i = 0;
 	if (select_map == 0)
 	{
@@ -331,6 +352,7 @@ void scan_map(int select_map)
 }
 void print_map(int cx, int cy, int sel_vi)
 {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
 	gotoxy(0, 0);
 	for (i = 0;i < HIGH;i++)
 	{
