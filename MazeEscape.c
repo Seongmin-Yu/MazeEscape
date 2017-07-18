@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <process.h>
 #include<mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 //------------------------------------------------------------------------------------------------------------------------
@@ -24,16 +25,19 @@
 #define Circle (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
 //------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
+int time_limit = 60;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
+void limit_time(void *i);
 void logo_MUSIC();
 void play_MUSIC();
 int Logo_UI(int *regame,int *sel_vi, int *sel_map);
-void print_UI(int have_item, int select_map);
+void print_UI(int have_item, int select_map,int time);
 void Exit_UI();
 void scan_map(int select_map);
 void print_map(int cx, int cy, int sel_vi);
 void print_clear();
+void print_fail();
 void search_character(int *x, int*y);
 void check_clear(int *clear);
 void character_function(int cx, int cy, int *have_item, int *item_count);
@@ -66,16 +70,21 @@ int main()
 		{
 			play_MUSIC();
 			scan_map(select_map);
-			while (clear)
+			time_limit = 60;
+			_beginthread(limit_time, 0, NULL);
+			while (clear && time_limit != 0)
 			{
 				create_item(&item_count);
 				search_character(&character_x, &character_y);
-				print_UI(have_item, select_map);
+				print_UI(have_item, select_map, time_limit);
 				print_map(character_x, character_y, select_vision);
-				check_clear(&clear, select_map);
+				check_clear(&clear);
 				character_function(character_x, character_y, &have_item, &item_count);
 			}
-			print_clear();
+			if (time_limit != 0)
+				print_clear();
+			else
+				print_fail();
 			PlaySound(0, 0, 0);
 			clear = 1;
 			item_count = 0;
@@ -84,6 +93,14 @@ int main()
 	Exit_UI();
 }
 //------------------------------------------------------------------------------------------------------------------------
+void limit_time(void *i)
+{
+	while (time_limit != 0)
+	{
+		time_limit--;
+		Sleep(1000);
+	}
+}
 void logo_MUSIC()
 {
 	PlaySound(logoMUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
@@ -99,7 +116,6 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	int select_vision = 0;
 	char key;
 
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 	gotoxy(40, 10);
 	printf("      @   @                           @@@@@@@");
 	gotoxy(40, 11);
@@ -116,7 +132,7 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	printf("                                                                        @           ");
 	gotoxy(40, 17);
 	printf("                                                                        @           ");
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+	
 	while (status)
 	{
 		if (kbhit())
@@ -251,20 +267,9 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	*sel_vi = select_vision;
 	*sel_map = select_map;
 }
-void print_UI(int have_item, int select_map)
+void print_UI(int have_item, int select_map,int time)
 {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	i = 0;
-	if (select_map == 0)
-	{
-		gotoxy(114, 23);
-		printf("¢¸ FINSH");
-	}
-	else if (select_map == 1)
-	{
-		gotoxy(114, 23);
-		printf("¢¸ FINSH");
-	}
 	gotoxy(116, 2);
 	printf("How to play");
 	gotoxy(116, 3);
@@ -290,6 +295,10 @@ void print_UI(int have_item, int select_map)
 		else
 			printf("¡à");
 	}
+	gotoxy(114, 23);
+	printf("¢¸ FINSH");
+	gotoxy(116, 11);
+	printf("TIME : %2d", time_limit);
 }
 void Exit_UI()
 {
@@ -352,7 +361,6 @@ void scan_map(int select_map)
 }
 void print_map(int cx, int cy, int sel_vi)
 {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
 	gotoxy(0, 0);
 	for (i = 0;i < HIGH;i++)
 	{
@@ -397,6 +405,7 @@ void print_map(int cx, int cy, int sel_vi)
 void print_clear()
 {
 	int status = 1;
+	time_limit = 1000;
 
 	gotoxy(0, 0);
 	for (i = 0;i < HIGH;i++)
@@ -411,7 +420,7 @@ void print_clear()
 				printf("¿Ê");
 			else if (map[i][j] == '3')
 				printf("¨Æ");
-			Sleep(2);
+			Sleep(1);
 		}
 		printf("\n");
 	}
@@ -432,7 +441,29 @@ void print_clear()
 	printf(" #        ##  #       #    #    #");
 	gotoxy(60, 16);
 	printf("  ######  ##   #####   #### ##  #");
-	Sleep(1500);
+	Sleep(2000);
+}
+void print_fail()
+{
+	int status = 1;
+
+	system("cls");
+
+	gotoxy(75, 10);
+	printf("@@@@@@@            @  @");
+	gotoxy(75, 11);
+	printf("@                     @");
+	gotoxy(75, 12);
+	printf("@         @@@      @  @");
+	gotoxy(75, 13);
+	printf("@@@@@@@  @   @     @  @");
+	gotoxy(75, 14);
+	printf("@       @     @    @  @");
+	gotoxy(75, 15);
+	printf("@       @    @@    @  @");
+	gotoxy(75, 16);
+	printf("@        @@@@  @@  @  @");
+	Sleep(2000);
 }
 void search_character(int *x, int*y)
 {
@@ -457,84 +488,89 @@ void character_function(int cx, int cy, int *have_item, int *item_count)
 {
 	char key;
 
-	key = _getch();
-	if (key == 224)
-		key = getch();
+	if (kbhit())
+	{
+		key = _getch();
+		if (key == 224)
+			key = getch();
 
-	if (key == UP)
-	{
-		if (map[cy - 1][cx] == '0' || map[cy - 1][cx] == '3')
+		if (key == UP)
 		{
-			if (map[cy - 1][cx] == '3'&&*have_item < H_ITEM_MAX)
+			if (map[cy - 1][cx] == '0' || map[cy - 1][cx] == '3')
 			{
-				(*have_item)++;
-				(*item_count)--;
-			}
-			map[cy][cx] = '0';
-			map[cy - 1][cx] = '2';
-		}
-	}
-	else if (key == LEFT)
-	{
-		if (map[cy][cx - 1] == '0' || map[cy][cx - 1] == '3')
-		{
-			if (map[cy][cx - 1] == '3'&&*have_item < H_ITEM_MAX)
-			{
-				(*have_item)++;
-				(*item_count)--;
-			}
-			map[cy][cx] = '0';
-			map[cy][cx - 1] = '2';
-		}
-	}
-	else if (key == RIGHT)
-	{
-		if (map[cy][cx + 1] == '0' || map[cy][cx + 1] == '3')
-		{
-			if (map[cy][cx + 1] == '3'&&*have_item < H_ITEM_MAX)
-			{
-				(*have_item)++;
-				(*item_count)--;
-			}
-			map[cy][cx] = '0';
-			map[cy][cx + 1] = '2';
-		}
-	}
-	else if (key == DOWN)
-	{
-		if (map[cy + 1][cx] == '0' || map[cy + 1][cx] == '3')
-		{
-			if (map[cy + 1][cx] == '3'&&*have_item < H_ITEM_MAX)
-			{
-				(*have_item)++;
-				(*item_count)--;
-			}
-			map[cy][cx] = '0';
-			map[cy + 1][cx] = '2';
-		}
-	}
-	else if (key == USE_ITEM)
-	{
-		if (*have_item > 0)
-		{
-			gotoxy(0, 0);
-			for (i = 0;i < HIGH;i++)
-			{
-				for (j = 0;j < WIDE;j++)
+				if (map[cy - 1][cx] == '3'&&*have_item < H_ITEM_MAX)
 				{
-					if (map[i][j] == '0')
-						printf("  ");
-					else if (map[i][j] == '1')
-						printf("¡á");
-					else if (map[i][j] == '2')
-						printf("¿Ê");
-					else if (map[i][j] == '3')
-						printf("¨Æ");
+					(*have_item)++;
+					(*item_count)--;
 				}
-				printf("\n");
+				map[cy][cx] = '0';
+				map[cy - 1][cx] = '2';
 			}
-			Sleep(1500);
-			(*have_item)--;
+		}
+		else if (key == LEFT)
+		{
+			if (map[cy][cx - 1] == '0' || map[cy][cx - 1] == '3')
+			{
+				if (map[cy][cx - 1] == '3'&&*have_item < H_ITEM_MAX)
+				{
+					(*have_item)++;
+					(*item_count)--;
+				}
+				map[cy][cx] = '0';
+				map[cy][cx - 1] = '2';
+			}
+		}
+		else if (key == RIGHT)
+		{
+			if (map[cy][cx + 1] == '0' || map[cy][cx + 1] == '3')
+			{
+				if (map[cy][cx + 1] == '3'&&*have_item < H_ITEM_MAX)
+				{
+					(*have_item)++;
+					(*item_count)--;
+				}
+				map[cy][cx] = '0';
+				map[cy][cx + 1] = '2';
+			}
+		}
+		else if (key == DOWN)
+		{
+			if (map[cy + 1][cx] == '0' || map[cy + 1][cx] == '3')
+			{
+				if (map[cy + 1][cx] == '3'&&*have_item < H_ITEM_MAX)
+				{
+					(*have_item)++;
+					(*item_count)--;
+				}
+				map[cy][cx] = '0';
+				map[cy + 1][cx] = '2';
+			}
+		}
+		else if (key == USE_ITEM)
+		{
+			if (*have_item > 0)
+			{
+				gotoxy(0, 0);
+				for (i = 0;i < HIGH;i++)
+				{
+					for (j = 0;j < WIDE;j++)
+					{
+						if (map[i][j] == '0')
+							printf("  ");
+						else if (map[i][j] == '1')
+							printf("¡á");
+						else if (map[i][j] == '2')
+							printf("¿Ê");
+						else if (map[i][j] == '3')
+							printf("¨Æ");
+					}
+					printf("\n");
+				}
+				gotoxy(116, 11);
+				printf("TIME : %2d", time_limit);
+				Sleep(1500);
+				(*have_item)--;
+			}
 		}
 	}
 }
