@@ -8,8 +8,11 @@
 #include<mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 //------------------------------------------------------------------------------------------------------------------------
-#define playMUSIC TEXT("play.wav")
-#define logoMUSIC TEXT("logo.wav")
+#define Logo_MUSIC TEXT("logo.wav")
+#define Map1_MUSIC TEXT("Map1.wav")
+#define Map2_MUSIC TEXT("Map2.wav")
+#define Map3_MUSIC TEXT("Map3.wav")
+#define Map4_MUSIC TEXT("Map4.wav")
 #define WIDE 57
 #define HIGH 29
 #define VISION 4
@@ -29,9 +32,8 @@ int time_limit = 60;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void limit_time(void *i);
-void logo_MUSIC();
-void play_MUSIC();
-int Logo_UI(int *regame,int *sel_vi, int *sel_map);
+void play_MUSIC(int status);
+void Logo_UI(int *regame,int *sel_vi, int *sel_map);
 void print_UI(int have_item, int select_map,int time);
 void Exit_UI();
 void scan_map(int select_map);
@@ -55,20 +57,21 @@ int main()
 	int clear = 1;
 	int character_y;
 	int character_x;
-	int select_map = 0;
+	int select_map = 4;
 	int select_vision = 0;
 	int regame = 1;
 
 	while (regame)
 	{
-		logo_MUSIC();
+		select_map = 4;
+		play_MUSIC(select_map);
 		RemoveCursor();
 		Logo_UI(&regame,&select_vision,&select_map);
 		system("cls");
 		PlaySound(0, 0, 0);
 		if (regame == 1)
 		{
-			play_MUSIC();
+			play_MUSIC(select_map);
 			scan_map(select_map);
 			time_limit = 60;
 			_beginthread(limit_time, 0, NULL);
@@ -101,15 +104,20 @@ void limit_time(void *i)
 		Sleep(1000);
 	}
 }
-void logo_MUSIC()
+void play_MUSIC(int status)
 {
-	PlaySound(logoMUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	if(status == 4)
+		PlaySound(Logo_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	else if(status == 0)
+		PlaySound(Map1_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	else if (status == 1)
+		PlaySound(Map2_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	else if (status == 2)
+		PlaySound(Map3_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	else if (status == 3)
+		PlaySound(Map4_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 }
-void play_MUSIC()
-{
-	PlaySound(playMUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-}
-int Logo_UI(int *regame, int *sel_vi, int *sel_map)
+void Logo_UI(int *regame, int *sel_vi, int *sel_map)
 {
 	int status = 1;
 	int select_map = 0;
@@ -141,10 +149,7 @@ int Logo_UI(int *regame, int *sel_vi, int *sel_map)
 			if (key == ENTER)
 			{
 				if (select_map == 3)
-				{
 					*regame = 0;
-					return 0;
-				}
 				status = 0;
 			}
 			else if (key == UP)
