@@ -28,13 +28,14 @@
 #define Circle (VISION*VISION > (i + 0.5 - cy)*(i + 0.5 - cy) + (j + 0.5 - cx)*(j + 0.5 - cx))
 //------------------------------------------------------------------------------------------------------------------------
 int i = 0, j = 0;
-int time_limit = 60;
+int time_limit;
 char map[HIGH][WIDE];
 //------------------------------------------------------------------------------------------------------------------------
 void limit_time(void *i);
 void play_MUSIC(int status);
-void Logo_UI(int *regame,int *sel_vi, int *sel_map);
-void print_UI(int have_item, int select_map,int time);
+int logo_UI(int *regame, int *sel_vi, int *sel_map);
+void how_to_play();
+void game_UI(int have_item, int select_map, int time);
 void Exit_UI();
 void scan_map(int select_map);
 void print_map(int cx, int cy, int sel_vi);
@@ -57,7 +58,8 @@ int main()
 	int clear = 1;
 	int character_y;
 	int character_x;
-	int select_map = 4;
+	int select_menu = 0;
+	int select_map = 0;
 	int select_vision = 0;
 	int regame = 1;
 
@@ -66,20 +68,20 @@ int main()
 		select_map = 4;
 		play_MUSIC(select_map);
 		RemoveCursor();
-		Logo_UI(&regame,&select_vision,&select_map);
+		logo_UI(&regame, &select_vision, &select_map);
 		system("cls");
 		PlaySound(0, 0, 0);
 		if (regame == 1)
 		{
 			play_MUSIC(select_map);
 			scan_map(select_map);
-			time_limit = 60;
+			time_limit = 1;
 			_beginthread(limit_time, 0, NULL);
 			while (clear && time_limit != 0)
 			{
 				create_item(&item_count);
 				search_character(&character_x, &character_y);
-				print_UI(have_item, select_map, time_limit);
+				game_UI(have_item, select_map, time_limit);
 				print_map(character_x, character_y, select_vision);
 				check_clear(&clear);
 				character_function(character_x, character_y, &have_item, &item_count);
@@ -106,9 +108,9 @@ void limit_time(void *i)
 }
 void play_MUSIC(int status)
 {
-	if(status == 4)
+	if (status == 4)
 		PlaySound(Logo_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-	else if(status == 0)
+	else if (status == 0)
 		PlaySound(Map1_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 	else if (status == 1)
 		PlaySound(Map2_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
@@ -117,30 +119,35 @@ void play_MUSIC(int status)
 	else if (status == 3)
 		PlaySound(Map4_MUSIC, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 }
-void Logo_UI(int *regame, int *sel_vi, int *sel_map)
+int logo_UI(int *regame, int *sel_vi, int *sel_map)
 {
 	int status = 1;
+	int select_menu = 0;
 	int select_map = 0;
 	int select_vision = 0;
 	char key;
 
-	gotoxy(40, 10);
-	printf("      @   @                           @@@@@@@");
-	gotoxy(40, 11);
-	printf("     @ @ @ @   @@@@     @@@@@   @@@@  @        @@@@@   @@@@@   @@@@     @@@@   @@@@ ");
-	gotoxy(40, 12);
-	printf("    @   @  @  @    @       @   @    @ @       @       @       @    @    @   @ @    @");
-	gotoxy(40, 13);
-	printf("   @       @ @     @      @    @@@@@@ @@@@@@@  @@@@  @       @     @    @   @ @@@@@@");
-	gotoxy(40, 14);
-	printf("  @        @ @     @@    @     @      @            @  @      @     @@   @@@@  @     ");
-	gotoxy(40, 15);
-	printf(" @         @  @@@@  @@  @@@@@   @@@@  @@@@@@@ @@@@@    @@@@@  @@@@  @@  @      @@@@ ");
-	gotoxy(40, 16);
-	printf("                                                                        @           ");
-	gotoxy(40, 17);
-	printf("                                                                        @           ");
-	
+	gotoxy(38, 9);
+	printf("┌────────────────────────────────────────────┐");
+	gotoxy(38, 10);
+	printf("│       @   @                           @@@@@@@                                          │");
+	gotoxy(38, 11);
+	printf("│      @ @ @ @   @@@@     @@@@@   @@@@  @        @@@@@   @@@@@   @@@@     @@@@   @@@@    │");
+	gotoxy(38, 12);
+	printf("│     @   @  @  @    @       @   @    @ @       @       @       @    @    @   @ @    @   │");
+	gotoxy(38, 13);
+	printf("│    @       @ @     @      @    @@@@@@ @@@@@@@  @@@@  @       @     @    @   @ @@@@@@   │");
+	gotoxy(38, 14);
+	printf("│   @        @ @     @@    @     @      @            @  @      @     @@   @@@@  @        │");
+	gotoxy(38, 15);
+	printf("│  @         @  @@@@  @@  @@@@@   @@@@  @@@@@@@ @@@@@    @@@@@  @@@@  @@  @      @@@@    │");
+	gotoxy(38, 16);
+	printf("│                                                                         @              │");
+	gotoxy(38, 17);
+	printf("│                                                                         @              │");
+	gotoxy(38, 18);
+	printf("└────────────────────────────────────────────┘");
+	//메인 메뉴
 	while (status)
 	{
 		if (kbhit())
@@ -148,90 +155,146 @@ void Logo_UI(int *regame, int *sel_vi, int *sel_map)
 			key = getch();
 			if (key == ENTER)
 			{
-				if (select_map == 3)
+				if (select_menu == 2)
+				{
 					*regame = 0;
+					return 0;
+				}
+				else if (select_menu == 1)
+					how_to_play();
+				else if (select_menu == 0)
+					status = 0;
+			}
+			else if (key == UP && select_menu > 0)
+				select_menu -= 1;
+			else if (key == DOWN && select_menu < 2)
+				select_menu += 1;
+		}
+		if (select_menu == 0)
+		{
+			gotoxy(74, 22);
+			printf("┌───────┐");
+			gotoxy(74, 23);
+			printf("│▶ Start      │");
+			gotoxy(74, 24);
+			printf("│   How to play│");
+			gotoxy(74, 25);
+			printf("│   Exit       │");
+			gotoxy(74, 26);
+			printf("└───────┘");
+
+		}
+		else if (select_menu == 1)
+		{
+			gotoxy(74, 22);
+			printf("┌───────┐");
+			gotoxy(74, 23);
+			printf("│   Start      │");
+			gotoxy(74, 24);
+			printf("│▶ How to play│");
+			gotoxy(74, 25);
+			printf("│   Exit       │");
+			gotoxy(74, 26);
+			printf("└───────┘");
+		}
+		else if (select_menu == 2)
+		{
+			gotoxy(74, 22);
+			printf("┌───────┐");
+			gotoxy(74, 23);
+			printf("│   Start      │");
+			gotoxy(74, 24);
+			printf("│   How to play│");
+			gotoxy(74, 25);
+			printf("│▶ Exit       │");
+			gotoxy(74, 26);
+			printf("└───────┘");
+		}
+	}
+	status = 1;
+	//맵 선택하기
+	while (status)
+	{
+		if (kbhit())
+		{
+			key = getch();
+			if (key == ENTER)
 				status = 0;
-			}
-			else if (key == UP)
-			{
-				if (select_map > 0)
-					select_map -= 1;
-			}
-			else if (key == DOWN)
-			{
-				if (select_map < 3)
-					select_map += 1;
-			}
+			else if (key == UP && select_map > 0)
+				select_map -= 1;
+			else if (key == DOWN && select_map < 3)
+				select_map += 1;
 		}
 		if (select_map == 0)
 		{
 			gotoxy(74, 22);
-			printf("┌────┐");
+			printf("┌─────┐            ");
 			gotoxy(74, 23);
-			printf("│▶ Easy │");
+			printf("│▶ Map 1  │                ");
 			gotoxy(74, 24);
-			printf("│   Nomal│");
+			printf("│   Map 2  │                ");
 			gotoxy(74, 25);
-			printf("│   Hard │");
+			printf("│   Map 3  │                ");
 			gotoxy(74, 26);
-			printf("│   Exit │");
+			printf("│   Map 4  │                ");
 			gotoxy(74, 27);
-			printf("└────┘");
+			printf("└─────┘           ");
 
 		}
 		else if (select_map == 1)
 		{
 			gotoxy(74, 22);
-			printf("┌────┐");
+			printf("┌─────┐                ");
 			gotoxy(74, 23);
-			printf("│   Easy │");
+			printf("│   Map 1  │                ");
 			gotoxy(74, 24);
-			printf("│▶ Nomal│");
+			printf("│▶ Map 2  │                ");
 			gotoxy(74, 25);
-			printf("│   Hard │");
+			printf("│   Map 3  │                ");
 			gotoxy(74, 26);
-			printf("│   Exit │");
+			printf("│   Map 4  │                ");
 			gotoxy(74, 27);
-			printf("└────┘");
+			printf("└─────┘                ");
 		}
 		else if (select_map == 2)
 		{
 			gotoxy(74, 22);
-			printf("┌────┐");
+			printf("┌─────┐                ");
 			gotoxy(74, 23);
-			printf("│   Easy │");
+			printf("│   Map 1  │                ");
 			gotoxy(74, 24);
-			printf("│   Nomal│");
+			printf("│   Map 2  │                ");
 			gotoxy(74, 25);
-			printf("│▶ Hard │");
+			printf("│▶ Map 3  │                ");
 			gotoxy(74, 26);
-			printf("│   Exit │");
+			printf("│   Map 4  │                ");
 			gotoxy(74, 27);
-			printf("└────┘");
+			printf("└─────┘                ");
 		}
 		else if (select_map == 3)
 		{
 			gotoxy(74, 22);
-			printf("┌────┐");
+			printf("┌─────┐                ");
 			gotoxy(74, 23);
-			printf("│   Easy │");
+			printf("│   Map 1  │                ");
 			gotoxy(74, 24);
-			printf("│   Nomal│");
+			printf("│   Map 2  │                ");
 			gotoxy(74, 25);
-			printf("│   Hard │");
+			printf("│   Map 3  │                ");
 			gotoxy(74, 26);
-			printf("│▶ Exit │");
+			printf("│▶ Map 4  │                ");
 			gotoxy(74, 27);
-			printf("└────┘");
+			printf("└─────┘                ");
 		}
 	}
 	status = 1;
 	gotoxy(74, 25);
-	printf("           ");
+	printf("                           ");
 	gotoxy(74, 26);
-	printf("           ");
+	printf("                           ");
 	gotoxy(74, 27);
-	printf("           ");
+	printf("                           ");
+	//시야 모양 선택하기
 	while (status)
 	{
 		if (kbhit())
@@ -272,23 +335,56 @@ void Logo_UI(int *regame, int *sel_vi, int *sel_map)
 	*sel_vi = select_vision;
 	*sel_map = select_map;
 }
-void print_UI(int have_item, int select_map,int time)
+void how_to_play()
+{
+	system("cls");
+	gotoxy(68, 15);
+	printf(" ┌────────────┐");
+	gotoxy(68, 16);
+	printf("  │      How to play     │");
+	gotoxy(68, 17);
+	printf(" └────────────┘");
+	gotoxy(64, 19);
+	printf("┌─────────────────┐");
+	gotoxy(64, 20);
+	printf(" │                                │");
+	gotoxy(64, 21);
+	printf(" │         ↑ : Turn UP           │");
+	gotoxy(64, 22);
+	printf(" │         ← : Turn LEFT         │");
+	gotoxy(64, 23);
+	printf(" │         → : Turn RIGHT        │");
+	gotoxy(64, 24);
+	printf(" │         ↓ : Turn DOWN         │");
+	gotoxy(64, 25);
+	printf(" │        └┘: Use item          │");
+	gotoxy(64, 26);
+	printf(" │                                │");
+	gotoxy(64, 27);
+	printf(" │    ㉵ : After receiving the    │");
+	gotoxy(64, 28);
+	printf(" │         item, show the map     │");
+	gotoxy(64, 29);
+	printf(" │         for 1 second           │");
+	gotoxy(64, 30);
+	printf(" │                                │");
+	gotoxy(64, 31);
+	printf(" │     Escape within time limits  │");
+	gotoxy(64, 32);
+	printf(" │                                │");
+	gotoxy(64, 33);
+	printf("└─────────────────┘");
+	getch();
+	system("cls");
+}
+void game_UI(int have_item, int select_map, int time)
 {
 	i = 0;
-	gotoxy(116, 2);
-	printf("How to play");
-	gotoxy(116, 3);
-	printf("↑ : Turn UP");
-	gotoxy(116, 4);
-	printf("← : Turn LEFT");
-	gotoxy(116, 5);
-	printf("→ : Turn RIGHT");
-	gotoxy(116, 6);
-	printf("↓ : Turn DOWN");
-	gotoxy(116, 7);
-	printf("Space : Use Item");
-	gotoxy(116, 10);
-	printf("Item : ");
+
+	gotoxy(115, 8);
+	printf("┌─────────┐");
+	gotoxy(115, 9);
+	printf("│ITEM : ");
 	while (i != H_ITEM_MAX)
 	{
 		i++;
@@ -300,28 +396,41 @@ void print_UI(int have_item, int select_map,int time)
 		else
 			printf("□");
 	}
-	gotoxy(114, 23);
-	printf("◀ FINSH");
-	gotoxy(116, 11);
-	printf("TIME : %2d", time_limit);
+	printf(" │");
+	gotoxy(115, 10);
+	printf("├─────┬───┘");
+	gotoxy(115, 11);
+	printf("│TIME : %3d│", time_limit);
+	gotoxy(115, 12);
+	printf("└─────┘");
+	gotoxy(115, 22);
+	printf("┌────┐");
+	gotoxy(115, 23);
+	printf("│◀ FINSH│");
+	gotoxy(115, 24);
+	printf("└────┘");
 }
 void Exit_UI()
 {
 	system("cls");
-	gotoxy(70, 13);
-	printf("@@@@@@@@              @");
-	gotoxy(70, 14);
-	printf("@                @    @");
-	gotoxy(70, 15);
-	printf("@                   @@@@@");
-	gotoxy(70, 16);
-	printf("@@@@@@@@  @  @   @    @");
-	gotoxy(70, 17);
-	printf("@          @@    @    @");
-	gotoxy(70, 18);
-	printf("@          @@    @    @");
-	gotoxy(70, 19);
-	printf("@@@@@@@@  @  @   @    @");
+	gotoxy(68, 12);
+	printf("┌──────────────┐");
+	gotoxy(68, 13);
+	printf("│ @@@@@@@@              @    │");
+	gotoxy(68, 14);
+	printf("│ @                @    @    │");
+	gotoxy(68, 15);
+	printf("│ @                   @@@@@  │");
+	gotoxy(68, 16);
+	printf("│ @@@@@@@@  @  @   @    @    │");
+	gotoxy(68, 17);
+	printf("│ @          @@    @    @    │");
+	gotoxy(68, 18);
+	printf("│ @          @@    @    @    │");
+	gotoxy(68, 19);
+	printf("│ @@@@@@@@  @  @   @    @    │");
+	gotoxy(68, 20);
+	printf("└──────────────┘");
 	gotoxy(0, 40);
 	printf(" ");
 }
@@ -362,6 +471,18 @@ void scan_map(int select_map)
 			}
 		}
 		fclose(map_f3);
+	}
+	else if (select_map == 3)
+	{
+		FILE *map_f4 = fopen("MazeMap4.txt", "r");
+		for (i = 0;i < HIGH;i++)
+		{
+			for (j = 0;j < WIDE;j++)
+			{
+				fscanf(map_f4, "%c", &map[i][j]);
+			}
+		}
+		fclose(map_f4);
 	}
 }
 void print_map(int cx, int cy, int sel_vi)
@@ -432,20 +553,24 @@ void print_clear()
 	Sleep(500);
 	system("cls");
 
+	gotoxy(60, 9);
+	printf("┌─────────────────────┐");
 	gotoxy(60, 10);
-	printf("  ######  ##");
+	printf("│   ######  ##                             │");
 	gotoxy(60, 11);
-	printf(" #        ##");
+	printf("│  #        ##                             │");
 	gotoxy(60, 12);
-	printf("#         ##   #####    ####    # ####");
+	printf("│ #         ##   #####    ####    # ####   │");
 	gotoxy(60, 13);
-	printf("#         ##  #     #  #    #   ##    #");
+	printf("│ #         ##  #     #  #    #   ##    #  │");
 	gotoxy(60, 14);
-	printf("#         ##  ######  #     #   #");
+	printf("│ #         ##  ######  #     #   #        │");
 	gotoxy(60, 15);
-	printf(" #        ##  #       #    #    #");
+	printf("│  #        ##  #       #    #    #        │");
 	gotoxy(60, 16);
-	printf("  ######  ##   #####   #### ##  #");
+	printf("│   ######  ##   #####   #### ##  #        │");
+	gotoxy(60, 17);
+	printf("└─────────────────────┘");
 	Sleep(2000);
 }
 void print_fail()
@@ -454,20 +579,24 @@ void print_fail()
 
 	system("cls");
 
-	gotoxy(75, 10);
-	printf("@@@@@@@            @  @");
-	gotoxy(75, 11);
-	printf("@                     @");
-	gotoxy(75, 12);
-	printf("@         @@@      @  @");
-	gotoxy(75, 13);
-	printf("@@@@@@@  @   @     @  @");
-	gotoxy(75, 14);
-	printf("@       @     @    @  @");
-	gotoxy(75, 15);
-	printf("@       @    @@    @  @");
-	gotoxy(75, 16);
-	printf("@        @@@@  @@  @  @");
+	gotoxy(73, 9);
+	printf("┌─────────────┐");
+	gotoxy(73, 10);
+	printf("│ @@@@@@@            @  @  │");
+	gotoxy(73, 11);
+	printf("│ @                     @  │");
+	gotoxy(73, 12);
+	printf("│ @         @@@      @  @  │");
+	gotoxy(73, 13);
+	printf("│ @@@@@@@  @   @     @  @  │");
+	gotoxy(73, 14);
+	printf("│ @       @     @    @  @  │");
+	gotoxy(73, 15);
+	printf("│ @       @    @@    @  @  │");
+	gotoxy(73, 16);
+	printf("│ @        @@@@  @@  @  @  │");
+	gotoxy(73, 17);
+	printf("└─────────────┘");
 	Sleep(2000);
 }
 void search_character(int *x, int*y)
@@ -486,8 +615,8 @@ void search_character(int *x, int*y)
 }
 void check_clear(int *clear)
 {
-		if (map[23][55] == '2')
-			*clear = 0;
+	if (map[23][55] == '2')
+		*clear = 0;
 }
 void character_function(int cx, int cy, int *have_item, int *item_count)
 {
@@ -572,7 +701,7 @@ void character_function(int cx, int cy, int *have_item, int *item_count)
 					printf("\n");
 				}
 				gotoxy(116, 11);
-				printf("TIME : %2d", time_limit);
+				printf("TIME :  %2d", time_limit);
 				Sleep(1500);
 				(*have_item)--;
 			}
